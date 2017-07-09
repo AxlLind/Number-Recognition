@@ -9,7 +9,7 @@
 #include "Matrix.h"
 
 /**
- * Artificial neural network.
+ * Artificial neural network with three layers.
  * Uses forward propagation to classify/apply regression to input data.
  * Uses back-propagation and gradient descent to train the neural network.
  * Supports both single and batch gradient descent.
@@ -75,7 +75,6 @@ class NeuralNetwork {
     }
 
  public:
-
     NeuralNetwork(int numIn, int numHidden, int numOut, double learnRate) :
             W1(numIn, numHidden), W2(numHidden, numOut),
             num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate) {

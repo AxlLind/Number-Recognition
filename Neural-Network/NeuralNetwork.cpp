@@ -5,21 +5,23 @@
 #include <iostream>
 #include "Matrix.h"
 #include "NeuralNetwork.h"
+#include "MNISTReader.h"
 
 int main()
 {
-    NeuralNetwork brain(2, 3, 1, 0.2);
-    Matrix A(3,2);
-    A(0,0, 3 ); A(0,1, 4);
-    A(1,0, 5 ); A(1,1, 1);
-    A(2,0, 10); A(2,1, 2);
+    clock_t before = clock();
+    Matrix training_labels = MNISTReader::Parse(MNISTReader::TrainingLabels);
+    Matrix training_data   = MNISTReader::Parse(MNISTReader::TrainingData);
+    Matrix test_labels     = MNISTReader::Parse(MNISTReader::TestLabels);
+    Matrix test_data       = MNISTReader::Parse(MNISTReader::TestData);
+    std::cout << "Time to read MNIST data: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s\n";
 
-    Matrix Y(3,1);
-    Y.setColumn(0, std::vector<double>({0.2, 0.5, 0.8}));
-    for (int i = 0; i < 20000; i++) {
-        brain.train(A, Y);
+    NeuralNetwork brain(784, 30, 10, 0.2);
+    for (int i = 0; i < 50; ++i) {
+        clock_t begin = clock();
+        brain.train(training_data, training_labels);
+        std::cout << (double)(clock() - before) / CLOCKS_PER_SEC << "s ";
     }
 
-    std::cout << brain.forward(A) << "\n\n";
-    std::cout << brain.cost(A, Y) << "\n\n";
+    std::cout << "\n\n" << brain.cost(test_data, test_labels);
 }

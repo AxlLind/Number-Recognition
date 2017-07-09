@@ -29,8 +29,16 @@ class Matrix {
 
     std::vector<double> arr;
 
-    double get(int i, int j) const { return arr[i * cols + j]; };
-    void set(int i, int j, double value) { arr[i * cols +  j] = value; };
+    double get(int i, int j) const {
+        if (i >= rows || j >= cols)
+            throw std::invalid_argument("Matrix::get() - index out of bounds");
+        return arr[i * cols + j];
+    };
+    void set(int i, int j, double value) {
+        if (i >= rows || j >= cols)
+            throw std::invalid_argument("Matrix::get() - index out of bounds");
+        arr[i * cols +  j] = value;
+    };
 
  public:
     const int rows, cols;
@@ -131,6 +139,8 @@ class Matrix {
     void setRow(int row, const std::vector<double>& v) {
         if (v.size() != cols)
             throw std::invalid_argument("Matrix::setRow() - Row does not match matrix row size");
+        if (row >= rows)
+            throw std::invalid_argument("Matrix::setRow() - Row out of bounds");
 
         for (int j = 0; j < cols; ++j)
             set(row, j, v[j]);
@@ -142,6 +152,8 @@ class Matrix {
     void setColumn(int col, const std::vector<double>& v) {
         if (v.size() != rows)
             throw std::invalid_argument("Matrix::setColumn() - Column does not match matrix column size");
+        if (col >= cols)
+            throw std::invalid_argument("Matrix::setColumn() - Column out of bounds");
 
         for (int i = 0; i < rows; ++i)
             set(i, col, v[i]);
