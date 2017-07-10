@@ -1,6 +1,3 @@
-//
-// Created by Axel Lindeberg on 2017-07-01.
-//
 
 #ifndef NUMBER_RECOGNITION_NEURALNETWORK_H
 #define NUMBER_RECOGNITION_NEURALNETWORK_H
@@ -13,10 +10,17 @@
  * Uses forward propagation to classify/apply regression to input data.
  * Uses back-propagation and gradient descent to train the neural network.
  * Supports both single and batch gradient descent.
- *
  * Activation function is the sigmoid function, might want to use ReLU instead.
- *
  * Uses the Matrix class for input, output, and internally.
+ *
+ * Example:
+ *
+ * NeuralNetwork nn(3,5,1)     // creates nn with 3 input, 5 hidden, and 1 output
+ * nn.train( data, labels )    // trains nn with gradient descent
+ * nn.evaluate( testing_data ) // classifies testing_data
+ *
+ * @author Axel Lindeberg
+ * @date 2017-07-01
  */
 class NeuralNetwork {
     const int num_in, num_hidden, num_out;
@@ -83,7 +87,7 @@ class NeuralNetwork {
         W2.randomizeValues();
     }
 
-    Matrix forward(const Matrix& A) {
+    Matrix evaluate(const Matrix &A) {
         if (A.cols != num_in)
             throw std::invalid_argument("Input does not match neural network");
 
@@ -109,7 +113,7 @@ class NeuralNetwork {
         if (y.rows != input.rows)
             throw std::invalid_argument("Input-data and label-data need to be of same size");
 
-        Matrix yDiff = y - forward(input);
+        Matrix yDiff = y - evaluate(input);
         Matrix error(yDiff.rows, 1);
         for (int i = 0; i < yDiff.rows; ++i) {
             double sum = 0;

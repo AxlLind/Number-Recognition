@@ -1,6 +1,3 @@
-//
-// Created by Axel Lindeberg on 2017-07-01.
-//
 
 #ifndef NUMBER_RECOGNITION_MATRIX_H
 #define NUMBER_RECOGNITION_MATRIX_H
@@ -16,6 +13,9 @@
  *
  * Stores the matrix-data as a std::vector in the background and gives an api to the
  * matrix via the ()-operator, as a get:er A(row,col) and set:er A(row,col, value).
+ *
+ * NOTE: Only supports double as element type
+ *
  * Example:
  *
  *   Matrix A(2,3);    // constructs a 2x3 matrix
@@ -23,7 +23,8 @@
  *   double d = A(0,0) // variable d is now equal to 5
  *   A(0,0, A(0,0)+1)  // Adds 1 to element 0,0
  *
- * NOTE: Only supports double as element type
+ * @author Axel Lindeberg
+ * @date 2017-07-01
  */
 class Matrix {
 
@@ -33,16 +34,16 @@ class Matrix {
         if (i >= rows || j >= cols)
             throw std::invalid_argument("Matrix::get() - index out of bounds");
         return arr[i * cols + j];
-    };
+    }
+
     void set(int i, int j, double value) {
         if (i >= rows || j >= cols)
-            throw std::invalid_argument("Matrix::get() - index out of bounds");
+            throw std::invalid_argument("Matrix::set() - index out of bounds");
         arr[i * cols +  j] = value;
-    };
+    }
 
  public:
     const int rows, cols;
-
 
     /**
      * Constructs a r x c matrix and sets every element in the matrix to zero
@@ -52,8 +53,6 @@ class Matrix {
     Matrix(int r, int c) : arr(r * c), rows(r), cols(c) {
         if (r < 1 || c < 1)
             throw std::invalid_argument("Matrix::Constructor() - Matrix can't have less than 1 row and/or column");
-
-        clear();
     }
 
     /**
@@ -66,10 +65,9 @@ class Matrix {
         for (int i = 0; i < arr.size(); ++i)
             arr[i] = v[i];
     }
-    // ### Constructors
 
     /**
-     * Transpose of the matrix
+     * Transpose of the matrix.
      */
     Matrix T() const {
         Matrix A(cols, rows);
@@ -98,7 +96,7 @@ class Matrix {
     }
 
     /**
-     * Sets every element in the matrix to 0
+     * Sets every element in the matrix to 0.
      */
     void clear() {
         for (int row = 0; row < rows; ++row) {
@@ -108,7 +106,7 @@ class Matrix {
     }
 
     /**
-     * Sets every element to a random value
+     * Sets every element to a random value.
      */
     void randomizeValues() {
         for (int row = 0; row < rows; ++row) {
@@ -119,8 +117,7 @@ class Matrix {
 
     /**
      * Returns the length of the 'Matrix'. Only works when the
-     * Matrix is a vector, i.e has one column
-     * @return vector-length
+     * Matrix is a vector, i.e has one column.
      */
     double vectorLength() const {
         if (cols != 1)
@@ -134,26 +131,22 @@ class Matrix {
     }
 
     /**
-     * Sets the speficied row equal to the values of the passed vector
+     * Sets the specified row equal to the values of the passed vector
      */
     void setRow(int row, const std::vector<double>& v) {
         if (v.size() != cols)
             throw std::invalid_argument("Matrix::setRow() - Row does not match matrix row size");
-        if (row >= rows)
-            throw std::invalid_argument("Matrix::setRow() - Row out of bounds");
 
         for (int j = 0; j < cols; ++j)
             set(row, j, v[j]);
     }
 
     /**
-     * Sets the speficied column equal to the values of the passed vector
+     * Sets the specified column equal to the values of the passed vector
      */
     void setColumn(int col, const std::vector<double>& v) {
         if (v.size() != rows)
             throw std::invalid_argument("Matrix::setColumn() - Column does not match matrix column size");
-        if (col >= cols)
-            throw std::invalid_argument("Matrix::setColumn() - Column out of bounds");
 
         for (int i = 0; i < rows; ++i)
             set(i, col, v[i]);
