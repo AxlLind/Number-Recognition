@@ -109,11 +109,11 @@ class NeuralNetwork {
     }
 
 
-    Matrix cost(const Matrix &input, const Matrix &y) {
-        if (y.rows != input.rows)
+    Matrix cost(const Matrix& input, const Matrix& labels) {
+        if (labels.rows != input.rows)
             throw std::invalid_argument("Input-data and label-data need to be of same size");
 
-        Matrix yDiff = y - evaluate(input);
+        Matrix yDiff = labels - evaluate(input);
         Matrix error(yDiff.rows, 1);
         for (int i = 0; i < yDiff.rows; ++i) {
             double sum = 0;
@@ -123,6 +123,25 @@ class NeuralNetwork {
             error(i,0, 0.5 * sum);
         }
         return error;
+    }
+
+    int numCorrect(const Matrix& input, const Matrix& labels, double threshold) {
+        if (labels.rows != input.rows)
+            throw std::invalid_argument("Input-data and label-data need to be of same size");
+
+        Matrix result = evaluate(input);
+
+        int num_correct = 0;
+        for (int i = 0; i < result.rows; ++i) {
+            for (int j = 0; j < labels.cols; ++j) {
+                if (labels(i,j) == 1) {
+                    if ( labels(i, j) - result(i, j) < threshold) ++num_correct;
+                    break;
+                }
+            }
+
+        }
+        return num_correct;
     }
 
     void train(const Matrix& trainingData, const Matrix& labels) {
