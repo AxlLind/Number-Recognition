@@ -18,10 +18,10 @@
  *
  * Example:
  *
- *   Matrix A(2,3);    // constructs a 2x3 matrix
- *   A(0,0, 5)         // sets element 0,0 equal to 5
- *   double d = A(0,0) // variable d is now equal to 5
- *   A(0,0, A(0,0)+1)  // Adds 1 to element 0,0
+ *      Matrix A(2,3);    // constructs a 2x3 matrix
+ *      A(0,0, 5)         // sets element 0,0 equal to 5
+ *      double d = A(0,0) // variable d is now equal to 5
+ *      A(0,0, A(0,0)+1)  // Adds 1 to element 0,0
  *
  * @author Axel Lindeberg
  * @date 2017-07-01
@@ -32,13 +32,13 @@ class Matrix {
 
     double get(int i, int j) const {
         if (i >= rows || j >= cols)
-            throw std::invalid_argument("Matrix::get() - index out of bounds");
+            throw std::invalid_argument("Matrix::get() - Index out of bounds");
         return arr[i * cols + j];
     }
 
     void set(int i, int j, double value) {
         if (i >= rows || j >= cols)
-            throw std::invalid_argument("Matrix::set() - index out of bounds");
+            throw std::invalid_argument("Matrix::set() - Index out of bounds");
         arr[i * cols +  j] = value;
     }
 
@@ -46,19 +46,19 @@ class Matrix {
     const int rows, cols;
 
     /**
-     * Constructs a r x c matrix and sets every element in the matrix to zero
-     * @param r - number of rows
-     * @param c - number of columns
+     * Constructs a r x c matrix with every element initialized as 0
+     * @param rows - number of rows
+     * @param cols - number of columns
      */
-    Matrix(int r, int c) : arr(r * c), rows(r), cols(c) {
-        if (r < 1 || c < 1)
+    Matrix(int rows, int cols) : arr(rows * cols), rows(rows), cols(cols) {
+        if (rows < 1 || cols < 1)
             throw std::invalid_argument("Matrix::Constructor() - Matrix can't have less than 1 row and/or column");
     }
 
     /**
      * Initializes matrix with one column (as a vector equivalent).
      */
-    Matrix(std::vector<double>& v) : rows(v.size()), cols(1), arr (v.size()) {
+    Matrix(std::vector<double>& v) : rows(v.size()), cols(1), arr(v.size()) {
         if (v.size() < 1)
             throw std::invalid_argument("Matrix::Constructor() - Matrix (Vector constructor) needs at least 1 element");
 
@@ -91,7 +91,6 @@ class Matrix {
             for (int j = 0; j < cols; ++j)
                 OUT(i,j, get(i,j) * A(i,j) );
         }
-
         return OUT;
     }
 
@@ -99,16 +98,13 @@ class Matrix {
      * Sets every element in the matrix to 0.
      */
     void clear() {
-        for (int row = 0; row < rows; ++row) {
-            for (int col = 0; col < cols; ++col)
-                set(row, col, 0);
-        }
+        std::fill(arr.begin(), arr.end(), 0);
     }
 
     /**
-     * Sets every element to a random value.
+     * Sets every element to a random value between -1 and 1.
      */
-    void randomizeValues() {
+    void randomize() {
         for (int row = 0; row < rows; ++row) {
             for (int col = 0; col < cols; ++col)
                 set(row, col, 2 * ((double)rand() / (double) RAND_MAX) - 1);
@@ -152,17 +148,17 @@ class Matrix {
             set(i, col, v[i]);
     }
 
-    double operator()(int row, int col) const { return get(row, col); }
-    void operator()(int row, int col, double value) { set(row, col, value); }
+    double operator() (int row, int col) const { return get(row, col); }
+    void   operator() (int row, int col, double value) { set(row, col, value); }
 
     friend std::ostream& operator<< (std::ostream &stream, const Matrix &A);
-    friend Matrix operator* (const Matrix &A, const Matrix &B);
-    friend Matrix operator* (const Matrix &A, double b);
-    friend Matrix operator* (double b, const Matrix &A);
-    friend Matrix operator+ (const Matrix &A, const Matrix &B);
-    friend void operator+= ( Matrix &A, const Matrix &B);
-    friend Matrix operator- (const Matrix &A, const Matrix &B);
-    friend void operator-= ( Matrix &A, const Matrix &B);
+    friend Matrix operator*  (const Matrix &A, const Matrix &B);
+    friend Matrix operator*  (const Matrix &A, double b);
+    friend Matrix operator*  (double b, const Matrix &A);
+    friend Matrix operator+  (const Matrix &A, const Matrix &B);
+    friend void   operator+= (Matrix &A, const Matrix &B);
+    friend Matrix operator-  (const Matrix &A, const Matrix &B);
+    friend void   operator-= (Matrix &A, const Matrix &B);
 
     std::string toString() const {
         std::string s = "[";
@@ -170,7 +166,6 @@ class Matrix {
             for (int col = 0; col < cols; ++col) {
                 if (get(row, col) > 0)
                     s += " ";
-
                 s += std::to_string(get(row, col)) + " ";
             }
             s += "\n ";
@@ -183,8 +178,6 @@ class Matrix {
 
 
 
-
-// ### Operator overloading
 
 Matrix operator*(const Matrix& A, const Matrix& B) {
     if (A.cols != B.rows)
@@ -239,7 +232,4 @@ void operator-= ( Matrix& A, const Matrix& B) { operator+= (A, -1 * B); }
 
 std::ostream& operator<<(std::ostream& os, const Matrix& A) { return os << A.toString(); }
 
-// ### Operator overloading
-
-
-#endif NUMBER_RECOGNITION_MATRIX_H
+#endif //NUMBER_RECOGNITION_MATRIX_H

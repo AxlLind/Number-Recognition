@@ -9,13 +9,14 @@ typedef unsigned char byte;
 
 /**
  * Static class to read and parse data from the "The MNIST database of handwritten digits".
- * Data file path hardcoded as static variables at the bottom.
+ * Data file path hardcoded as string variables at the bottom.
  * Values returned as Matrix objects (see Matrix.h).
  * Documentation on how data is structured in the files: http://yann.lecun.com/exdb/mnist/
  *
  * Example:
  *
- * Matrix training_data = MNIST::Parse( MNIST::TrainingData ); // returns 60000x784 matrix
+ *      Matrix training_data = MNIST::ParseFull( MNIST::TrainingData );                  // returns 60000x784 matrix
+ *      std::vector<Matrix> training_sets = MNIST::Parse( MNIST::TrainingData, 20, 10 ); // returns 10 20x784 matrices
  *
  * @author Axel Lindeberg
  * @date 2017-07-01
@@ -51,9 +52,10 @@ class MNIST {
             throw std::invalid_argument("MNIST::Parse() - number of items requested larger than data set");
 
         std::vector<Matrix> OUT(num_batches, Matrix(batch_size,10));
+        int index = 8;
         for (int i = 0; i < num_batches; ++i) {
             for (int j = 0; j < OUT[i].rows; ++j) {
-                OUT[i](j, data[i * batch_size + j + 8], 1);
+                OUT[i](j, data[index++], 1);
             }
         }
         return OUT;
@@ -71,12 +73,11 @@ class MNIST {
         int pixels = rows * cols;
 
         std::vector<Matrix> OUT(num_batches, Matrix(batch_size, pixels));
+        int index = 16;
         for (int i = 0; i < num_batches; ++i) {
             for (int j = 0; j < batch_size; ++j) {
                 for (int k = 0; k < pixels; ++k) {
-                    int index = i * batch_size * pixels + j * cols + k + 16;
-                    //std::cout << index << " " << std::flush;
-                    double val = static_cast<double>(data[index]) / 255;
+                    double val = static_cast<double>(data[index++]) / 255;
                     OUT[i](j, k, val);
                 }
             }
@@ -122,4 +123,4 @@ const std::string MNIST::training_label_path = "../Data/train-labels-idx1-ubyte"
 const std::string MNIST::test_data_path      = "../Data/t10k-images-idx3-ubyte";
 const std::string MNIST::test_label_path     = "../Data/t10k-labels-idx1-ubyte";
 
-#endif //NUMBER_RECOGNITION_MNISTREADER_H
+#endif //NUMBER_RECOGNITION_MNIST_H

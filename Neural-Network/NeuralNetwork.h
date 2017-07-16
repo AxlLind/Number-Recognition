@@ -15,9 +15,9 @@
  *
  * Example:
  *
- * NeuralNetwork nn(3,5,1)     // creates nn with 3 input, 5 hidden, and 1 output
- * nn.train( data, labels )    // trains nn with gradient descent
- * nn.evaluate( testing_data ) // classifies testing_data
+ *      NeuralNetwork NN(3,5,1)     // creates nn with 3 input-, 5 hidden-, and 1 output-neuron
+ *      NN.train( data, labels )    // trains nn with gradient descent
+ *      NN.evaluate( testing_data ) // classifies testing_data
  *
  * @author Axel Lindeberg
  * @date 2017-07-01
@@ -53,7 +53,7 @@ class NeuralNetwork {
 
     std::vector<Matrix> fullForward(const Matrix& A) {
         if (A.cols != num_in)
-            throw std::invalid_argument("Input does not match neural network");
+            throw std::invalid_argument("NeuralNetwork::fullForward() - Input does not match neural network");
 
         Matrix Z2 = A * W1;
         Matrix A2 = activation(Z2);
@@ -63,17 +63,17 @@ class NeuralNetwork {
         return std::vector<Matrix>({Z2, A2, Z3, yHat});
     }
 
-    std::vector<Matrix> costPrime(const Matrix &input, const Matrix &y) {
-        if (y.rows != input.rows)
-            throw std::invalid_argument("Input-data and label-data need to be of same size");
+    std::vector<Matrix> costPrime(const Matrix &data, const Matrix &labels) {
+        if (labels.rows != data.rows)
+            throw std::invalid_argument("NeuralNetwork::costPrime() - Input-data and label-data need to be of same size");
 
-        auto matrices = fullForward(input); // {Z2, A2, Z3, yHat}
+        auto matrices = fullForward(data); // {Z2, A2, Z3, yHat}
 
-        Matrix delta3 = -1 * ( y - matrices[3] ).scalarMulti( activation(matrices[2], true) );
+        Matrix delta3 = -1 * ( labels - matrices[3] ).scalarMulti( activation(matrices[2], true) );
         Matrix d_W2 = matrices[1].T() * delta3;
 
         Matrix delta2 = ( delta3 * W2.T() ).scalarMulti( activation(matrices[0], true) );
-        Matrix d_W1 = input.T() * delta2;
+        Matrix d_W1 = data.T() * delta2;
 
         return std::vector<Matrix>({d_W1, d_W2});
     }
@@ -82,14 +82,16 @@ class NeuralNetwork {
     NeuralNetwork(int numIn, int numHidden, int numOut, double learnRate) :
             W1(numIn, numHidden), W2(numHidden, numOut),
             num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate) {
-        srand(time(NULL));
-        W1.randomizeValues();
-        W2.randomizeValues();
+        if (numIn < 1 || numHidden < 1 || numOut < 1 || learnRate <= 0)
+            throw std::invalid_argument("NeuralNetwork::Constructor() - Invalid argument(s)");
+
+        W1.randomize();
+        W2.randomize();
     }
 
     Matrix evaluate(const Matrix &A) {
         if (A.cols != num_in)
-            throw std::invalid_argument("Input does not match neural network");
+            throw std::invalid_argument("NeuralNetwork::evaluate() - Input does not match neural network");
 
         Matrix OUT = activation(activation(A * W1) * W2);
         return num_out == 1 ? OUT : normalizeRows(OUT);
@@ -109,11 +111,11 @@ class NeuralNetwork {
     }
 
 
-    Matrix cost(const Matrix& input, const Matrix& labels) {
-        if (labels.rows != input.rows)
-            throw std::invalid_argument("Input-data and label-data need to be of same size");
+    Matrix cost(const Matrix& data, const Matrix& labels) {
+        if (data.rows != labels.rows)
+            throw std::invalid_argument("NeuralNetwork::cost() - Input-data and label-data need to be of same size");
 
-        Matrix yDiff = labels - evaluate(input);
+        Matrix yDiff = labels - evaluate(data);
         Matrix error(yDiff.rows, 1);
         for (int i = 0; i < yDiff.rows; ++i) {
             double sum = 0;
@@ -125,34 +127,35 @@ class NeuralNetwork {
         return error;
     }
 
-    int numCorrect(const Matrix& input, const Matrix& labels, double threshold) {
-        if (labels.rows != input.rows)
-            throw std::invalid_argument("Input-data and label-data need to be of same size");
+    double percentCorrect(const Matrix& data, const Matrix& labels, double threshold) {
+        if (data.rows != labels.rows)
+            throw std::invalid_argument("NeuralNetwork::numCorrect() - Input-data and label-data need to be of same size");
 
-        Matrix result = evaluate(input);
+        Matrix result = evaluate(data);
 
-        int num_correct = 0;
+        double num_correct = 0;
         for (int i = 0; i < result.rows; ++i) {
             for (int j = 0; j < labels.cols; ++j) {
                 if (labels(i,j) == 1) {
-                    if ( labels(i, j) - result(i, j) < threshold) ++num_correct;
+                    if ( result(i, j) >= threshold )
+                        ++num_correct;
                     break;
                 }
             }
 
         }
-        return num_correct;
+        return num_correct * 100 / data.rows;
     }
 
-    void train(const Matrix& trainingData, const Matrix& labels) {
-        if (labels.rows != trainingData.rows)
-            throw std::invalid_argument("Input-data and label-data need to be of same size");
+    void train(const Matrix& data, const Matrix& labels) {
+        if (data.rows != labels.rows)
+            throw std::invalid_argument("NeuralNetwork::train() - Input-data and label-data need to be of same size");
 
-        auto W_prime = costPrime(trainingData, labels);
+        auto dW = costPrime(data, labels);
 
-        W1 -= learn_rate * W_prime[0];
-        W2 -= learn_rate * W_prime[1];
+        W1 -= learn_rate * dW[0];
+        W2 -= learn_rate * dW[1];
     }
 };
 
-#endif NUMBER_RECOGNITION_NEURALNETWORK_H
+#endif //NUMBER_RECOGNITION_NEURALNETWORK_H
