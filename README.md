@@ -21,12 +21,6 @@ threshold of 0.7!
 1. Clone the repo
 2. Via terminal cd into Number-Recognition/Neural-Network
 3. Compile main.cpp, you might have to specify C++11. Using Clang++ the
-following command works for me (on mac):
-```
-    clang++ -std=c++11 main.cpp
-```
-4. Execute the compiled file:  
-```
-    ./a.out
-```
+following command works for me (on mac): `clang++ -std=c++11 main.cpp`
+4. Execute the compiled file: `./a.out`
 5. Follow the program instructions
