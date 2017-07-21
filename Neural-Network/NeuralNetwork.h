@@ -3,10 +3,11 @@
 #define NUMBER_RECOGNITION_NEURALNETWORK_H
 
 #include <cmath>
+#include <fstream>
 #include "Matrix.h"
 
 /**
- * Artificial neural network with three layers.
+ * Artificial neural network with a single hidden layer.
  * Uses forward propagation to classify/apply regression to input data.
  * Uses back-propagation and gradient descent to train the neural network.
  * Supports both single and batch gradient descent.
@@ -51,6 +52,21 @@ class NeuralNetwork {
         return OUT;
     }
 
+    Matrix normalizeRows(const Matrix& A) {
+        Matrix OUT(A.rows, A.cols);
+        for (int i = 0; i < OUT.rows; ++i) {
+            double total = 0;
+            for (int j = 0; j < OUT.cols; ++j)
+                total += A(i, j);
+
+            if (total == 0) continue;
+
+            for (int j = 0; j < OUT.cols; ++j)
+                OUT(i, j, A(i, j) / total);
+        }
+        return OUT;
+    }
+
     std::vector<Matrix> fullForward(const Matrix& A) {
         if (A.cols != num_in)
             throw std::invalid_argument("NeuralNetwork::fullForward() - Input does not match neural network");
@@ -63,7 +79,7 @@ class NeuralNetwork {
         return std::vector<Matrix>({Z2, A2, Z3, yHat});
     }
 
-    std::vector<Matrix> costPrime(const Matrix &data, const Matrix &labels) {
+    std::vector<Matrix> costPrime(const Matrix& data, const Matrix& labels) {
         if (labels.rows != data.rows)
             throw std::invalid_argument("NeuralNetwork::costPrime() - Input-data and label-data need to be of same size");
 
@@ -97,19 +113,6 @@ class NeuralNetwork {
         return num_out == 1 ? OUT : normalizeRows(OUT);
     }
 
-    Matrix normalizeRows(const Matrix& A) {
-        Matrix OUT(A.rows, A.cols);
-        for (int i = 0; i < OUT.rows; ++i) {
-            double total = 0;
-            for (int j = 0; j < OUT.cols; ++j)
-                total += A(i, j);
-
-            for (int j = 0; j < OUT.cols; ++j)
-                OUT(i, j, A(i, j) / total);
-        }
-        return OUT;
-    }
-
 
     Matrix cost(const Matrix& data, const Matrix& labels) {
         if (data.rows != labels.rows)
@@ -137,12 +140,11 @@ class NeuralNetwork {
         for (int i = 0; i < result.rows; ++i) {
             for (int j = 0; j < labels.cols; ++j) {
                 if (labels(i,j) == 1) {
-                    if ( result(i, j) >= threshold )
+                    if (result(i, j) >= threshold)
                         ++num_correct;
                     break;
                 }
             }
-
         }
         return num_correct * 100 / data.rows;
     }
@@ -152,9 +154,69 @@ class NeuralNetwork {
             throw std::invalid_argument("NeuralNetwork::train() - Input-data and label-data need to be of same size");
 
         auto dW = costPrime(data, labels);
-
         W1 -= learn_rate * dW[0];
         W2 -= learn_rate * dW[1];
+    }
+
+    /**
+     * Saves the current state of the neural network to a file.
+     * The file is of the following format:
+     *
+     *  1    num_in num_hidden num_out
+     *  2    [values of W1 separated by " "]
+     *  3    [values of W2 separated by " "]
+     *
+     * The state is fully represented by W1 and W1, the first line is to
+     * check that the file matches the network when reading in the state.
+     *
+     * @param file_path path where the file that contains the state is saved
+     */
+    void saveState(const std::string& file_path) {
+        std::remove(file_path.c_str());
+        std::ofstream file_out(file_path);
+        file_out << num_in << " " << num_hidden << " " << num_out << "\n";
+        for (int i = 0; i < W1.rows; ++i) {
+            for (int j = 0; j < W1.cols; ++j)
+                file_out << W1(i,j) << " ";
+        }
+        file_out << "\n";
+        for (int i = 0; i < W2.rows; ++i) {
+            for (int j = 0; j < W2.cols; ++j)
+                file_out << W2(i,j) << " ";
+        }
+        file_out << std::endl;
+    }
+
+    /**
+     * Reads the state of the neural network from a file at the specified path.
+     * Throws error if the file is not found or if the file does not
+     * match the neural network.
+     *
+     * @param file_path path where the file is located
+     */
+    void readState(const std::string& file_path) {
+        std::ifstream file_in(file_path);
+        if (!file_in.is_open())
+            throw std::invalid_argument("NeuralNetwork::readState() - Error reading file");
+
+        int in, hidden, out;
+        file_in >> in >> hidden >> out;
+        if (in != num_in || hidden != num_hidden || out != num_out)
+            throw std::runtime_error("NeuralNetwork::readState() - File does not match network");
+
+        double d;
+        for (int i = 0; i < W1.rows; ++i) {
+            for (int j = 0; j < W1.cols; ++j) {
+                file_in >> d;
+                W1(i,j, d);
+            }
+        }
+        for (int i = 0; i < W2.rows; ++i) {
+            for (int j = 0; j < W2.cols; ++j) {
+                file_in >> d;
+                W2(i,j, d);
+            }
+        }
     }
 };
 

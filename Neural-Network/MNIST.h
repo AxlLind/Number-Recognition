@@ -15,7 +15,7 @@ typedef unsigned char byte;
  *
  * Example:
  *
- *      Matrix training_data = MNIST::ParseFull( MNIST::TrainingData );                  // returns 60000x784 matrix
+ *      Matrix training_data = MNIST::ParseAll( MNIST::TrainingData );                  // returns 60000x784 matrix
  *      std::vector<Matrix> training_sets = MNIST::Parse( MNIST::TrainingData, 20, 10 ); // returns 10 20x784 matrices
  *
  * @author Axel Lindeberg
@@ -24,11 +24,8 @@ typedef unsigned char byte;
 class MNIST {
     static const std::string training_data_path, training_label_path, test_data_path, test_label_path;
 
-    static int byteToInt(const std::vector<byte>& data, int start_index) {
-        return  (data[start_index] << 24) |
-                (data[start_index + 1] << 16) |
-                (data[start_index + 2] << 8) |
-                 data[start_index + 3];
+    static int byteToInt(const std::vector<byte>& data, int i) {
+        return  (data[i] << 24) | (data[i+1] << 16) | (data[i+2] << 8) | data[i+3];
     }
 
     static std::vector<byte> read(const std::string& file_name) {
@@ -37,7 +34,6 @@ class MNIST {
             throw std::runtime_error("MNIST::Parse() - Unable to read file");
 
         auto pos = file.tellg();
-
         std::vector<char> data(pos);
 
         file.seekg(0, std::ios::beg);
@@ -90,7 +86,7 @@ class MNIST {
  public:
     enum DataType { TrainingData, TrainingLabels, TestData, TestLabels };
 
-    static Matrix ParseFull(DataType type) {
+    static Matrix ParseAll(DataType type) {
         switch (type) {
             case TrainingData:   return   parseData(60000)[0];
             case TrainingLabels: return parseLabels(60000)[0];
@@ -98,7 +94,7 @@ class MNIST {
             case TestLabels:     return parseLabels(10000, true)[0];
 
             default:
-                throw std::invalid_argument("MNIST::ParseFull() - Invalid DataType (somehow?!)");
+                throw std::invalid_argument("MNIST::ParseAll() - Invalid DataType (somehow?!)");
         }
     }
 

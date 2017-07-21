@@ -27,7 +27,6 @@
  * @date 2017-07-01
  */
 class Matrix {
-
     std::vector<double> arr;
 
     double get(int i, int j) const {
@@ -95,13 +94,6 @@ class Matrix {
     }
 
     /**
-     * Sets every element in the matrix to 0.
-     */
-    void clear() {
-        std::fill(arr.begin(), arr.end(), 0);
-    }
-
-    /**
      * Sets every element to a random value between -1 and 1.
      */
     void randomize() {
@@ -126,28 +118,6 @@ class Matrix {
         return sqrt(out);
     }
 
-    /**
-     * Sets the specified row equal to the values of the passed vector
-     */
-    void setRow(int row, const std::vector<double>& v) {
-        if (v.size() != cols)
-            throw std::invalid_argument("Matrix::setRow() - Row does not match matrix row size");
-
-        for (int j = 0; j < cols; ++j)
-            set(row, j, v[j]);
-    }
-
-    /**
-     * Sets the specified column equal to the values of the passed vector
-     */
-    void setColumn(int col, const std::vector<double>& v) {
-        if (v.size() != rows)
-            throw std::invalid_argument("Matrix::setColumn() - Column does not match matrix column size");
-
-        for (int i = 0; i < rows; ++i)
-            set(i, col, v[i]);
-    }
-
     double operator() (int row, int col) const { return get(row, col); }
     void   operator() (int row, int col, double value) { set(row, col, value); }
 
@@ -156,8 +126,8 @@ class Matrix {
     friend Matrix operator*  (const Matrix &A, double b);
     friend Matrix operator*  (double b, const Matrix &A);
     friend Matrix operator+  (const Matrix &A, const Matrix &B);
-    friend void   operator+= (Matrix &A, const Matrix &B);
     friend Matrix operator-  (const Matrix &A, const Matrix &B);
+    friend void   operator+= (Matrix &A, const Matrix &B);
     friend void   operator-= (Matrix &A, const Matrix &B);
 
     std::string toString() const {
@@ -175,7 +145,6 @@ class Matrix {
         return s;
     }
 };
-
 
 
 
