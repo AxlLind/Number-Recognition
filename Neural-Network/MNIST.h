@@ -24,11 +24,11 @@ typedef unsigned char byte;
 class MNIST {
     static const std::string training_data_path, training_label_path, test_data_path, test_label_path;
 
-    static int byteToInt(const std::vector<byte>& data, int i) {
+    static int byteToInt(const std::vector<byte> &data, int i) {
         return  (data[i] << 24) | (data[i+1] << 16) | (data[i+2] << 8) | data[i+3];
     }
 
-    static std::vector<byte> read(const std::string& file_name) {
+    static std::vector<byte> read(const std::string &file_name) {
         std::ifstream file(file_name, std::ios::binary|std::ios::ate);
         if (!file.is_open())
             throw std::runtime_error("MNIST::Parse() - Unable to read file");
@@ -86,6 +86,10 @@ class MNIST {
  public:
     enum DataType { TrainingData, TrainingLabels, TestData, TestLabels };
 
+    /**
+     * Parses the whole subset of the data set, as specified by the DataType.
+     * Returns the parsed data as a Matrix.
+     */
     static Matrix ParseAll(DataType type) {
         switch (type) {
             case TrainingData:   return   parseData(60000)[0];
@@ -98,6 +102,13 @@ class MNIST {
         }
     }
 
+    /**
+     * Parses a subset of the data into different matrices and returns a vector containing them.
+     * If the batch_size * num_batches exceeds the number of data points it will throw an error.
+     *
+     * @param batch_size How many datapoints each batch contains
+     * @param num_batches How many batches to return
+     */
     static std::vector<Matrix> Parse(DataType type, int batch_size, int num_batches) {
         if (batch_size < 1 || num_batches < 1)
             throw std::invalid_argument("MNIST::Parse() - Batch size and/or number of batches need to be at least one");

@@ -25,8 +25,8 @@
  */
 class NeuralNetwork {
     const int num_in, num_hidden, num_out;
+    const double learn_rate;
     Matrix W1, W2;
-    double learn_rate;
 
     /**
      * Activation function, currently the sigmoid function.
@@ -52,7 +52,7 @@ class NeuralNetwork {
         return OUT;
     }
 
-    Matrix normalizeRows(const Matrix& A) const {
+    Matrix normalizeRows(const Matrix &A) const {
         Matrix OUT(A.rows, A.cols);
         for (int i = 0; i < OUT.rows; ++i) {
             double total = 0;
@@ -67,7 +67,7 @@ class NeuralNetwork {
         return OUT;
     }
 
-    std::vector<Matrix> fullForward(const Matrix& A) const {
+    std::vector<Matrix> fullForward(const Matrix &A) const {
         if (A.cols != num_in)
             throw std::invalid_argument("NeuralNetwork::fullForward() - Input does not match neural network");
 
@@ -79,7 +79,7 @@ class NeuralNetwork {
         return std::vector<Matrix>({Z2, A2, Z3, yHat});
     }
 
-    std::vector<Matrix> costPrime(const Matrix& data, const Matrix& labels) const {
+    std::vector<Matrix> costPrime(const Matrix &data, const Matrix &labels) const {
         if (labels.rows != data.rows)
             throw std::invalid_argument("NeuralNetwork::costPrime() - Input-data and label-data need to be of same size");
 
@@ -100,35 +100,27 @@ class NeuralNetwork {
             num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate) {
         if (numIn < 1 || numHidden < 1 || numOut < 1 || learnRate <= 0)
             throw std::invalid_argument("NeuralNetwork::Constructor() - Invalid argument(s)");
+
         reset();
     }
 
-    Matrix evaluate(const Matrix &A) const {
-        if (A.cols != num_in)
+    /** Evaluates the data using forward propagation through the network. */
+    Matrix evaluate(const Matrix &data) const {
+        if (data.cols != num_in)
             throw std::invalid_argument("NeuralNetwork::evaluate() - Input does not match neural network");
 
-        Matrix OUT = activation(activation(A * W1) * W2);
+        Matrix OUT = activation(activation(data * W1) * W2);
         return num_out == 1 ? OUT : normalizeRows(OUT);
     }
 
-
-    Matrix cost(const Matrix& data, const Matrix& labels) const {
-        if (data.rows != labels.rows)
-            throw std::invalid_argument("NeuralNetwork::cost() - Input-data and label-data need to be of same size");
-
-        Matrix yDiff = labels - evaluate(data);
-        Matrix error(yDiff.rows, 1);
-        for (int i = 0; i < yDiff.rows; ++i) {
-            double sum = 0;
-            for (int j = 0; j < yDiff.cols; ++j)
-                sum += yDiff(i,j) * yDiff(i,j);
-
-            error(i,0, 0.5 * sum);
-        }
-        return error;
-    }
-
-    double percentCorrect(const Matrix& data, const Matrix& labels, double threshold) const {
+    /**
+     * Returns the percentage of datapoints that after evaluation
+     * are classified correctly above the threshold.
+     *
+     * @param threshold If evaluation is above the threshold it's labeled correct
+     * @return percentage of data correctly classified
+     */
+    double percentCorrect(const Matrix &data, const Matrix &labels, double threshold) const {
         if (data.rows != labels.rows)
             throw std::invalid_argument("NeuralNetwork::numCorrect() - Input-data and label-data need to be of same size");
 
@@ -147,13 +139,28 @@ class NeuralNetwork {
         return num_correct * 100 / data.rows;
     }
 
-    void train(const Matrix& data, const Matrix& labels) {
+    /**
+     * Train the network using back propagation.
+     *
+     * @param data Matrix containing the data
+     * @param labels Matrix containing the labels
+     */
+    void train(const Matrix &data, const Matrix &labels) {
         if (data.rows != labels.rows)
             throw std::invalid_argument("NeuralNetwork::train() - Input-data and label-data need to be of same size");
 
         auto dW = costPrime(data, labels);
         W1 -= learn_rate * dW[0];
         W2 -= learn_rate * dW[1];
+    }
+
+    /**
+     * Randomizes the weight-matrices, thereby clearing the network.
+     * I.e removes any training.
+     */
+    void reset() {
+        W1.randomize();
+        W2.randomize();
     }
 
     /**
@@ -169,7 +176,7 @@ class NeuralNetwork {
      *
      * @param file_path path where the file that contains the state is saved
      */
-    void saveState(const std::string& file_path) const {
+    void saveState(const std::string &file_path) const {
         std::remove(file_path.c_str());
         std::ofstream file_out(file_path);
         file_out << num_in << " " << num_hidden << " " << num_out << "\n";
@@ -192,7 +199,7 @@ class NeuralNetwork {
      *
      * @param file_path path where the file is located
      */
-    void readState(const std::string& file_path) {
+    void readState(const std::string &file_path) {
         std::ifstream file_in(file_path);
         if (!file_in.is_open())
             throw std::invalid_argument("NeuralNetwork::readState() - Error reading file");
@@ -215,15 +222,6 @@ class NeuralNetwork {
                 W2(i,j, d);
             }
         }
-    }
-
-    /**
-     * Randomizes the weight-matrices, thereby clearing the network.
-     * I.e removes any training.
-     */
-    void reset() {
-        W1.randomize();
-        W2.randomize();
     }
 };
 

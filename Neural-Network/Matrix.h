@@ -45,7 +45,7 @@ class Matrix {
     const int rows, cols;
 
     /**
-     * Constructs a r x c matrix with every element initialized as 0
+     * Constructs an r x c matrix with every element initialized as 0
      * @param rows - number of rows
      * @param cols - number of columns
      */
@@ -54,20 +54,7 @@ class Matrix {
             throw std::invalid_argument("Matrix::Constructor() - Matrix can't have less than 1 row and/or column");
     }
 
-    /**
-     * Initializes matrix with one column (as a vector equivalent).
-     */
-    Matrix(std::vector<double>& v) : rows(v.size()), cols(1), arr(v.size()) {
-        if (v.size() < 1)
-            throw std::invalid_argument("Matrix::Constructor() - Matrix (Vector constructor) needs at least 1 element");
-
-        for (int i = 0; i < arr.size(); ++i)
-            arr[i] = v[i];
-    }
-
-    /**
-     * Transpose of the matrix.
-     */
+    /** Transpose of the matrix. */
     Matrix T() const {
         Matrix A(cols, rows);
         for (int i = 0; i < A.rows; ++i) {
@@ -81,7 +68,7 @@ class Matrix {
      * Multiplies matrix element-wise with other matrix.
      * Matrices need to have the same dimensions.
      */
-    Matrix scalarMulti (const Matrix& A) const {
+    Matrix scalarMulti (const Matrix &A) const {
         if (rows != A.rows || cols != A.cols)
             throw std::invalid_argument("Matrix::scalarMulti() - Matrices need to be of same size");
 
@@ -95,27 +82,13 @@ class Matrix {
 
     /**
      * Sets every element to a random value between -1 and 1.
+     * Scalar multiply the matrix afterwards if you want different ranges.
      */
     void randomize() {
-        for (int row = 0; row < rows; ++row) {
-            for (int col = 0; col < cols; ++col)
-                set(row, col, 2 * ((double)rand() / (double) RAND_MAX) - 1);
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j)
+                set(i, j, 2 * ((double)rand() / RAND_MAX) - 1);
         }
-    }
-
-    /**
-     * Returns the length of the 'Matrix'. Only works when the
-     * Matrix is a vector, i.e has one column.
-     */
-    double vectorLength() const {
-        if (cols != 1)
-            throw std::invalid_argument("Matrix::vectorLength() - Not a vector, has more than 1 column");
-
-        double out = 0;
-        for (int i = 0; i < rows; ++i)
-            out += get(i,0) * get(i,0);
-
-        return sqrt(out);
     }
 
     double operator() (int row, int col) const { return get(row, col); }
@@ -148,7 +121,7 @@ class Matrix {
 
 
 
-Matrix operator*(const Matrix& A, const Matrix& B) {
+Matrix operator*(const Matrix &A, const Matrix &B) {
     if (A.cols != B.rows)
         throw std::invalid_argument("Invalid matrix multiplication: rows and columns do not match correctly");
 
@@ -165,7 +138,7 @@ Matrix operator*(const Matrix& A, const Matrix& B) {
     return OUT;
 }
 
-Matrix operator*(const Matrix& A, const double b) {
+Matrix operator*(const Matrix &A, double b) {
     Matrix OUT(A.rows, A.cols);
     for (int i = 0; i < A.rows; ++i) {
         for (int j = 0; j < A.cols; ++j)
@@ -174,9 +147,9 @@ Matrix operator*(const Matrix& A, const double b) {
     return OUT;
 }
 
-Matrix operator* (double b, const Matrix& A) { return operator* (A, b); }
+Matrix operator* (double b, const Matrix &A) { return operator* (A, b); }
 
-Matrix operator+ (const Matrix& A, const Matrix& B) {
+Matrix operator+ (const Matrix &A, const Matrix &B) {
     if (A.rows != B.rows || A.cols != B.cols)
         throw std::invalid_argument("Invalid matrix addition: dimensions do not match");
 
@@ -188,17 +161,17 @@ Matrix operator+ (const Matrix& A, const Matrix& B) {
     return OUT;
 }
 
-void operator+= (Matrix& A, const Matrix& B) {
+void operator+= (Matrix &A, const Matrix &B) {
     for (int i = 0; i < A.rows; ++i) {
         for (int j = 0; j < A.cols; ++j)
             A(i,j, A(i,j) + B(i,j) );
     }
 }
 
-Matrix operator- (const Matrix& A, const Matrix& B) { return operator+(A, -1 * B); }
+Matrix operator- (const Matrix &A, const Matrix &B) { return operator+(A, -1 * B); }
 
-void operator-= ( Matrix& A, const Matrix& B) { operator+= (A, -1 * B); }
+void operator-= ( Matrix &A, const Matrix &B) { operator+= (A, -1 * B); }
 
-std::ostream& operator<<(std::ostream& os, const Matrix& A) { return os << A.toString(); }
+std::ostream& operator<<(std::ostream &os, const Matrix &A) { return os << A.toString(); }
 
 #endif //NUMBER_RECOGNITION_MATRIX_H

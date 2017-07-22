@@ -1,6 +1,5 @@
 # Number-Recognition
 
-#### Introduction
 Artificial Neural Network created from scratch to classify hand-written
 numbers.
 
@@ -14,7 +13,7 @@ the network and forward propagation to classify data. It's trained using the
 numbers. The dataset contains 60000 hand written numbers used for training
 and 10000 used for testing after training.
 
-The network classifies 87.4% of the testing set correctly with a
+The network classifies 88% of the testing set correctly with a
 threshold of 0.7!
 
 #### How to use
