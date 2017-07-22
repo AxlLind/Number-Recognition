@@ -7,7 +7,7 @@
 /* Program Parameters */
 
 int num_batches = 500, batch_size = 60000 / num_batches, num_hidden_neurons = 20;
-double learn_rate = 0.2;
+double learn_rate = 0.2, correct_threshold = 0.7;
 std::string file_path = "../Data/network.state";
 
 /* Program Parameters */
@@ -25,7 +25,7 @@ void train(NeuralNetwork &NN, const std::vector<Matrix> &training_data, const st
 
 void evaluate(const NeuralNetwork &NN, const Matrix &test_data, const Matrix &test_labels) {
     auto before = clock();
-    double percent_correct = NN.percentCorrect(test_data, test_labels, 0.7);
+    double percent_correct = NN.percentCorrect(test_data, test_labels, correct_threshold);
     std::cout << "> Percent of test set correctly identified: " << percent_correct << "%\n";
     std::cout << "> Time to evaluate: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 }

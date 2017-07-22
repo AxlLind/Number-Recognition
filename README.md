@@ -24,3 +24,5 @@ threshold of 0.7!
 following command works for me (on mac): `clang++ -std=c++11 main.cpp`
 4. Execute the compiled file: `./a.out`
 5. Follow the program instructions
+
+![screenshot.png](https://raw.githubusercontent.com/AxlLind/Number-Recognition/master/screenshot.png)
