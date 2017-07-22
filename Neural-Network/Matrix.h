@@ -2,7 +2,6 @@
 #ifndef NUMBER_RECOGNITION_MATRIX_H
 #define NUMBER_RECOGNITION_MATRIX_H
 
-
 #include <vector>
 #include <cmath>
 
@@ -91,18 +90,6 @@ class Matrix {
         }
     }
 
-    double operator() (int row, int col) const { return get(row, col); }
-    void   operator() (int row, int col, double value) { set(row, col, value); }
-
-    friend std::ostream& operator<< (std::ostream &stream, const Matrix &A);
-    friend Matrix operator*  (const Matrix &A, const Matrix &B);
-    friend Matrix operator*  (const Matrix &A, double b);
-    friend Matrix operator*  (double b, const Matrix &A);
-    friend Matrix operator+  (const Matrix &A, const Matrix &B);
-    friend Matrix operator-  (const Matrix &A, const Matrix &B);
-    friend void   operator+= (Matrix &A, const Matrix &B);
-    friend void   operator-= (Matrix &A, const Matrix &B);
-
     std::string toString() const {
         std::string s = "[";
         for (int row = 0; row < rows; ++row) {
@@ -117,6 +104,18 @@ class Matrix {
         s.replace(s.length()-i, i,  " ]");
         return s;
     }
+
+    double operator() (int row, int col) const { return get(row, col); }
+    void   operator() (int row, int col, double value) { set(row, col, value); }
+
+    friend std::ostream& operator<< (std::ostream &os, const Matrix &A);
+    friend Matrix operator*  (const Matrix &A, const Matrix &B);
+    friend Matrix operator*  (const Matrix &A, double b);
+    friend Matrix operator*  (double b, const Matrix &A);
+    friend Matrix operator+  (const Matrix &A, const Matrix &B);
+    friend Matrix operator-  (const Matrix &A, const Matrix &B);
+    friend void   operator+= (Matrix &A, const Matrix &B);
+    friend void   operator-= (Matrix &A, const Matrix &B);
 };
 
 

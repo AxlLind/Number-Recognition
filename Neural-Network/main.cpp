@@ -10,6 +10,36 @@ double learn_rate = 0.2, correct_threshold = 0.7;
 std::string file_path = "../Data/network.state";
 /* Program Parameters */
 
+void optionExample(const NeuralNetwork &NN, const Matrix &test_data) {
+    auto before = clock();
+    Matrix Sample(1, test_data.cols);
+    int index = rand() % test_data.rows, maxI = -1;
+    for (int j = 0; j < Sample.cols; ++j)
+        Sample(0, j, test_data(index, j));
+
+    for (int i = 0; i < Sample.cols; ++i)
+        std::cout << (Sample(0,i) == 0 ? "--" : "##") << ((i+1) % 28 == 0 ? "\n" : "");
+
+    Matrix result = NN.evaluate(Sample);
+    double max = -1;
+    for (int i = 0; i < result.cols; ++i) {
+        double tmp = result(0,i);
+        if (max < tmp) {
+            max = tmp;
+            maxI = i;
+        }
+    }
+    std::cout << "> Neural Network classification: " << maxI << "\n";
+    std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
+}
+
+void optionEvaluate(const NeuralNetwork &NN, const Matrix &test_data, const Matrix &test_labels) {
+    auto before = clock();
+    double percent_correct = NN.percentCorrect(test_data, test_labels, correct_threshold);
+    std::cout << "> Percent of test set correctly identified: " << percent_correct << "%\n";
+    std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
+}
+
 void optionTrain(NeuralNetwork &NN, const std::vector<Matrix> &training_data, const std::vector<Matrix> &training_labels) {
     auto before = clock();
     std::vector<int> indexes(num_batches);
@@ -24,10 +54,10 @@ void optionTrain(NeuralNetwork &NN, const std::vector<Matrix> &training_data, co
     std::cout << "> Training: 100%\n> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 }
 
-void optionEvaluate(const NeuralNetwork &NN, const Matrix &test_data, const Matrix &test_labels) {
+void optionRead(NeuralNetwork &NN) {
     auto before = clock();
-    double percent_correct = NN.percentCorrect(test_data, test_labels, correct_threshold);
-    std::cout << "> Percent of test set correctly identified: " << percent_correct << "%\n";
+    NN.readState(file_path);
+    std::cout << "> Neural Network state successfully read from file!\n";
     std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 }
 
@@ -35,13 +65,6 @@ void optionSave(const NeuralNetwork &NN) {
     auto before = clock();
     NN.saveState(file_path);
     std::cout << "> Neural Network state successfully saved to file!\n";
-    std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
-}
-
-void optionRead(NeuralNetwork &NN) {
-    auto before = clock();
-    NN.readState(file_path);
-    std::cout << "> Neural Network state successfully read from file!\n";
     std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 }
 
@@ -56,18 +79,15 @@ int userInput() {
     int input;
     std::cin >> input;
     std::cout << "\n";
-    if (std::cin.fail()){
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-        return -1;
-    }
-    return input;
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    return std::cin.fail() ? -1 : input;
 }
 
 int main() {
     srand(time(NULL));
 
-    std::cout << "Parsing MNIST data set...\r" << std::flush;
+    std::cout << "\nParsing MNIST data set...\r" << std::flush;
     clock_t before = clock();
     auto training_labels = MNIST::Parse(MNIST::TrainingLabels, batch_size, num_batches);
     auto training_data   = MNIST::Parse(MNIST::TrainingData,   batch_size, num_batches);
@@ -77,25 +97,28 @@ int main() {
 
     NeuralNetwork NN(test_data.cols, num_hidden_neurons, test_labels.cols, learn_rate);
     while(1) {
-        std::cout << "\n\n1: Train | 2: Evaluate Test Set | 3: Save | 4: Read | 5: Reset | 6: Exit\n";
+        std::cout << "\n\n1: Example | 2: Evaluate | 3: Train | 4: Read | 5: Save | 6: Reset | 7: Exit\n";
         std::cout << "Enter a number to choose an action: ";
         switch(userInput()) {
             case 1:
-                optionTrain(NN, training_data, training_labels);
+                optionExample(NN, test_data);
                 break;
             case 2:
                 optionEvaluate(NN, test_data, test_labels);
                 break;
             case 3:
-                optionSave(NN);
+                optionTrain(NN, training_data, training_labels);
                 break;
             case 4:
                 optionRead(NN);
                 break;
             case 5:
-                optionReset(NN);
+                optionSave(NN);
                 break;
             case 6:
+                optionReset(NN);
+                break;
+            case 7:
                 std::cout << "> Neural Network exits.";
                 return 0;
 

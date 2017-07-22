@@ -2,7 +2,6 @@
 #ifndef NUMBER_RECOGNITION_NEURALNETWORK_H
 #define NUMBER_RECOGNITION_NEURALNETWORK_H
 
-#include <cmath>
 #include <fstream>
 #include "Matrix.h"
 

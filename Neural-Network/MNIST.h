@@ -2,10 +2,8 @@
 #ifndef NUMBER_RECOGNITION_MNISTREADER_H
 #define NUMBER_RECOGNITION_MNISTREADER_H
 
-#include <ios>
 #include <fstream>
 #include "Matrix.h"
-typedef unsigned char byte;
 
 /**
  * Static class to read and parse data from the "The MNIST database of handwritten digits".
@@ -24,11 +22,11 @@ typedef unsigned char byte;
 class MNIST {
     static const std::string training_data_path, training_label_path, test_data_path, test_label_path;
 
-    static int byteToInt(const std::vector<byte> &data, int i) {
+    static int byteToInt(const std::vector<unsigned char> &data, int i) {
         return  (data[i] << 24) | (data[i+1] << 16) | (data[i+2] << 8) | data[i+3];
     }
 
-    static std::vector<byte> read(const std::string &file_name) {
+    static std::vector<unsigned char> read(const std::string &file_name) {
         std::ifstream file(file_name, std::ios::binary|std::ios::ate);
         if (!file.is_open())
             throw std::runtime_error("MNIST::Parse() - Unable to read file");
@@ -38,11 +36,11 @@ class MNIST {
 
         file.seekg(0, std::ios::beg);
         file.read(&data[0], pos);
-        return std::vector<byte>(data.begin(), data.end());
+        return std::vector<unsigned char>(data.begin(), data.end());
     }
 
-    static std::vector<Matrix> parseLabels(int batch_size, bool testing = false, int num_batches = 1) {
-        auto data = read(testing ? test_label_path : training_label_path);
+    static std::vector<Matrix> parseLabels(int batch_size, bool test = false, int num_batches = 1) {
+        auto data = read(test ? test_label_path : training_label_path);
         int items = byteToInt(data, 4);
         if (batch_size * num_batches > items)
             throw std::invalid_argument("MNIST::Parse() - number of items requested larger than data set");
@@ -57,8 +55,8 @@ class MNIST {
         return OUT;
     }
 
-    static std::vector<Matrix> parseData(int batch_size, bool testing = false, int num_batches = 1) {
-        auto data = read(testing ? test_data_path : training_data_path);
+    static std::vector<Matrix> parseData(int batch_size, bool test = false, int num_batches = 1) {
+        auto data = read(test ? test_data_path : training_data_path);
         int items = byteToInt(data, 4);
 
         if (batch_size * num_batches > items)
@@ -125,9 +123,9 @@ class MNIST {
     }
 };
 
-const std::string MNIST::training_data_path  = "../Data/train-images-idx3-ubyte";
-const std::string MNIST::training_label_path = "../Data/train-labels-idx1-ubyte";
-const std::string MNIST::test_data_path      = "../Data/t10k-images-idx3-ubyte";
-const std::string MNIST::test_label_path     = "../Data/t10k-labels-idx1-ubyte";
+const std::string MNIST::training_data_path  = "../Data/train-images-idx3-ubyte",
+                  MNIST::training_label_path = "../Data/train-labels-idx1-ubyte",
+                  MNIST::test_data_path      = "../Data/t10k-images-idx3-ubyte" ,
+                  MNIST::test_label_path     = "../Data/t10k-labels-idx1-ubyte";
 
 #endif //NUMBER_RECOGNITION_MNIST_H
