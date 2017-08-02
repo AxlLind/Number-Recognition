@@ -55,12 +55,12 @@ class Matrix {
 
     /** Transpose of the matrix. */
     Matrix T() const {
-        Matrix A(cols, rows);
-        for (int i = 0; i < A.rows; ++i) {
-            for (int j = 0; j < A.cols; ++j)
-                A(i,j, get(j,i));
+        Matrix T(cols, rows);
+        for (int i = 0; i < T.rows; ++i) {
+            for (int j = 0; j < T.cols; ++j)
+                T(i,j, get(j,i));
         }
-        return A;
+        return T;
     }
 
     /**

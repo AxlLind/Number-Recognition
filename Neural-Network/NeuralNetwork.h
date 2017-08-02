@@ -54,14 +54,13 @@ class NeuralNetwork {
     Matrix normalizeRows(const Matrix &A) const {
         Matrix OUT(A.rows, A.cols);
         for (int i = 0; i < OUT.rows; ++i) {
-            double total = 0;
-            for (int j = 0; j < OUT.cols; ++j)
-                total += A(i, j);
+            double sum = 0;
+            for (int j = 0; j < OUT.cols; ++j) sum += A(i, j);
 
-            if (total == 0) continue;
+            if (sum == 0) continue;
 
             for (int j = 0; j < OUT.cols; ++j)
-                OUT(i, j, A(i, j) / total);
+                OUT(i, j, A(i, j) / sum);
         }
         return OUT;
     }
@@ -95,8 +94,8 @@ class NeuralNetwork {
 
  public:
     NeuralNetwork(int numIn, int numHidden, int numOut, double learnRate) :
-            W1(numIn, numHidden), W2(numHidden, numOut),
-            num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate) {
+            num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate),
+            W1(numIn, numHidden), W2(numHidden, numOut) {
         if (numIn < 1 || numHidden < 1 || numOut < 1 || learnRate <= 0)
             throw std::invalid_argument("NeuralNetwork::Constructor() - Invalid argument(s)");
 

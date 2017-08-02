@@ -10,18 +10,19 @@ double learn_rate = 0.2, correct_threshold = 0.7;
 std::string file_path = "../Data/network.state";
 /* Program Parameters */
 
-void optionExample(const NeuralNetwork &NN, const Matrix &test_data) {
+void optionExample(const NeuralNetwork &NN, const Matrix &test_data, const Matrix &test_labels) {
     auto before = clock();
     Matrix Sample(1, test_data.cols);
-    int index = rand() % test_data.rows, maxI = -1;
-    for (int j = 0; j < Sample.cols; ++j)
-        Sample(0, j, test_data(index, j));
-
-    for (int i = 0; i < Sample.cols; ++i)
-        std::cout << (Sample(0,i) == 0 ? "--" : "##") << ((i+1) % 28 == 0 ? "\n" : "");
+    int index = rand() % test_data.rows;
+    for (int i = 0; i < Sample.cols; ++i) {
+        Sample(0, i, test_data(index, i));
+        std::cout << (Sample(0, i) == 0 ? "--" : "##");
+        if ((i + 1) % 28 == 0) std::cout << "\n";
+    }
 
     Matrix result = NN.evaluate(Sample);
     double max = -1;
+    int maxI = -1;
     for (int i = 0; i < result.cols; ++i) {
         double tmp = result(0,i);
         if (max < tmp) {
@@ -29,7 +30,8 @@ void optionExample(const NeuralNetwork &NN, const Matrix &test_data) {
             maxI = i;
         }
     }
-    std::cout << "> Neural Network classification: " << maxI << "\n";
+    std::cout << "> Neural Network classification: " << maxI;
+    std::cout << (test_labels(index, maxI) == 1 ? " Correct!" : " Incorrect!") << "\n";
     std::cout << "> Time: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 }
 
@@ -86,14 +88,13 @@ int userInput() {
 
 int main() {
     srand(time(NULL));
-
-    std::cout << "\nParsing MNIST data set...\r" << std::flush;
     clock_t before = clock();
+    std::cout << "\n> Parsing MNIST data set...\r" << std::flush;
     auto training_labels = MNIST::Parse(MNIST::TrainingLabels, batch_size, num_batches);
     auto training_data   = MNIST::Parse(MNIST::TrainingData,   batch_size, num_batches);
     auto test_labels     = MNIST::ParseAll(MNIST::TestLabels);
     auto test_data       = MNIST::ParseAll(MNIST::TestData);
-    std::cout << "Time to parse MNIST data: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
+    std::cout << "> Time to parse MNIST data: " << (double)(clock() - before) / CLOCKS_PER_SEC << "s";
 
     NeuralNetwork NN(test_data.cols, num_hidden_neurons, test_labels.cols, learn_rate);
     while(1) {
@@ -101,7 +102,7 @@ int main() {
         std::cout << "Enter a number to choose an action: ";
         switch(userInput()) {
             case 1:
-                optionExample(NN, test_data);
+                optionExample(NN, test_data, test_labels);
                 break;
             case 2:
                 optionEvaluate(NN, test_data, test_labels);
