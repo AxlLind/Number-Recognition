@@ -22,7 +22,6 @@
  *      A(0,0) += 1            // Adds 1 to element 0,0
  *
  * @author Axel Lindeberg
- * @date 2018-05-14
  */
 template <typename T>
 class Matrix {
@@ -54,7 +53,7 @@ public:
     Matrix transpose() const;
 
     using iterator = T*;
-    constexpr iterator begin() const { return m_vec; }
+    constexpr iterator begin(int row = 0) const { return m_vec + m_cols * row; }
     constexpr iterator end()   const { return m_vec + m_rows * m_cols; }
 private:
     size_t m_rows, m_cols;

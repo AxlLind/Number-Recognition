@@ -4,9 +4,9 @@
 #include "MNIST.h"
 
 /* Program Parameters */
-int num_batches = 500, batch_size = 60000 / num_batches, hidden_neurons = 20;
-double learn_rate = 0.2, correct_threshold = 0.5;
-std::string file_path = "../Data/network.state";
+const int num_batches = 500, batch_size = 60000 / num_batches, hidden_neurons = 20;
+const double learn_rate = 0.2, correct_threshold = 0.5;
+const std::string file_path = "../Data/network.state";
 /* Program Parameters */
 
 void example(const NeuralNetwork &NN, const Matrix<double> &data, const Matrix<double> &labels) {
@@ -86,11 +86,11 @@ int main() {
     std::cout << "> Time: " << double(clock() - before) / CLOCKS_PER_SEC << "s\n";
 
     NeuralNetwork NN(test_data.cols(), hidden_neurons, test_labels.cols(), learn_rate);
-    while(1) {
+    while(true) {
         std::cout << "1: Example | 2: Test | 3: Train | 4: Read | 5: Reset | 6: Save | 7: Exit\n";
         std::cout << "Enter a number to choose an action: ";
-        int input = userInput();
 
+        int input = userInput();
         before = clock();
         switch(input) {
             case 1: example(NN, test_data, test_labels);       break;

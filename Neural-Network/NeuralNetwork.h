@@ -20,7 +20,6 @@
  *      NN.evaluate( testing_data ) // classifies testing_data
  *
  * @author Axel Lindeberg
- * @date 2017-07-01
  */
 class NeuralNetwork {
     const int num_in, num_hidden, num_out;
@@ -28,7 +27,7 @@ class NeuralNetwork {
     Matrix<double> W1, W2;
 
     /**
-     * Activation function, currently the sigmoid function.
+     * Activation function, the sigmoid function.
      *
      * @param deri - if true returns derivative of activation function.
      */
@@ -87,7 +86,7 @@ class NeuralNetwork {
         return {d_W1, d_W2};
     }
 
- public:
+public:
     NeuralNetwork(int in, int hidden, int out, double rate) :
     num_in(in), num_hidden(hidden), num_out(out), learn_rate(rate), W1(in, hidden), W2(hidden, out) {
         if (num_in < 1 || num_hidden < 1 || num_out < 1 || learn_rate <= 0)
