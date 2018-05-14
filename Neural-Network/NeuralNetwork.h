@@ -1,8 +1,8 @@
-
-#ifndef NUMBER_RECOGNITION_NEURALNETWORK_H
-#define NUMBER_RECOGNITION_NEURALNETWORK_H
+#ifndef NEURALNETWORK_H
+#define NEURALNETWORK_H
 
 #include <fstream>
+#include <vector>
 #include "Matrix.h"
 
 /**
@@ -25,90 +25,83 @@
 class NeuralNetwork {
     const int num_in, num_hidden, num_out;
     const double learn_rate;
-    Matrix W1, W2;
+    Matrix<double> W1, W2;
 
     /**
      * Activation function, currently the sigmoid function.
      *
-     * @param derivative - if true returns derivative of activation function.
+     * @param deri - if true returns derivative of activation function.
      */
-    double activation(double x, bool derivative = false) const {
+    double activation(double x, bool deriv = false) const {
         double d = 1 / (1 + exp(-x));
-        return derivative ? d * (1 - d) : d;
+        return deriv ? d * (1 - d) : d;
     }
 
     /**
      * Apply activation function element-wise to matrix A.
      *
-     * @param derivative - if true applies derivative of activation function.
+     * @param deri - if true applies derivative of activation function.
      */
-    Matrix activation(const Matrix &A, bool derivative = false) const {
-        Matrix OUT(A.rows, A.cols);
-        for (int i = 0; i < OUT.rows; ++i) {
-            for (int j = 0; j < OUT.cols; ++j)
-                OUT(i, j, activation( A(i, j), derivative ));
-        }
-        return OUT;
+    Matrix<double> activation(const Matrix<double> &a, bool deriv = false) const {
+        Matrix<double> res(a.rows(), a.cols());
+        std::transform(a.begin(), a.end(), res.begin(), [this, deriv](double d){ return activation(d, deriv); });
+        return res;
     }
 
-    Matrix normalizeRows(const Matrix &A) const {
-        Matrix OUT(A.rows, A.cols);
-        for (int i = 0; i < OUT.rows; ++i) {
+    Matrix<double> normalizeRows(const Matrix<double> &a) const {
+        Matrix<double> m(a.rows(), a.cols());
+        for (int i = 0; i < m.rows(); ++i) {
             double sum = 0;
-            for (int j = 0; j < OUT.cols; ++j) sum += A(i, j);
-
-            if (sum == 0) continue;
-
-            for (int j = 0; j < OUT.cols; ++j)
-                OUT(i, j, A(i, j) / sum);
+            for (int j = 0; j < m.cols(); ++j)
+                sum += a(i, j);
+            for (int j = 0; sum != 0 && j < m.cols(); ++j)
+                m(i, j) = a(i, j) / sum;
         }
-        return OUT;
+        return m;
     }
 
-    std::vector<Matrix> fullForward(const Matrix &A) const {
-        if (A.cols != num_in)
+    std::vector<Matrix<double>> fullForward(const Matrix<double> &A) const {
+        if (A.cols() != num_in)
             throw std::invalid_argument("NeuralNetwork::fullForward() - Input does not match neural network");
 
-        Matrix Z2 = A * W1;
-        Matrix A2 = activation(Z2);
-        Matrix Z3 = A2 * W2;
-        Matrix yHat = num_out == 1 ? activation(Z3) : normalizeRows(activation(Z3));
+        Matrix<double> Z2 = A * W1;
+        Matrix<double> A2 = activation(Z2);
+        Matrix<double> Z3 = A2 * W2;
+        Matrix<double> yHat = num_out == 1 ? activation(Z3) : normalizeRows(activation(Z3));
 
-        return std::vector<Matrix>({Z2, A2, Z3, yHat});
+        return {Z2, A2, Z3, yHat};
     }
 
-    std::vector<Matrix> costPrime(const Matrix &data, const Matrix &labels) const {
-        if (labels.rows != data.rows)
+    std::vector<Matrix<double>> costPrime(const Matrix<double> &data, const Matrix<double> &labels) const {
+        if (labels.rows() != data.rows())
             throw std::invalid_argument("NeuralNetwork::costPrime() - Input-data and label-data need to be of same size");
 
         auto matrices = fullForward(data); // {Z2, A2, Z3, yHat}
 
-        Matrix delta3 = -1 * ( labels - matrices[3] ).scalarMulti( activation(matrices[2], true) );
-        Matrix d_W2 = matrices[1].T() * delta3;
+        Matrix<double> delta3 = -1.0 * ( labels - matrices[3] ).scalar_multi( activation(matrices[2], true) );
+        Matrix<double> d_W2 = matrices[1].transpose() * delta3;
 
-        Matrix delta2 = ( delta3 * W2.T() ).scalarMulti( activation(matrices[0], true) );
-        Matrix d_W1 = data.T() * delta2;
+        Matrix<double> delta2 = ( delta3 * W2.transpose() ).scalar_multi( activation(matrices[0], true) );
+        Matrix<double> d_W1 = data.transpose() * delta2;
 
-        return std::vector<Matrix>({d_W1, d_W2});
+        return {d_W1, d_W2};
     }
 
  public:
-    NeuralNetwork(int numIn, int numHidden, int numOut, double learnRate) :
-            num_in(numIn), num_hidden(numHidden), num_out(numOut), learn_rate(learnRate),
-            W1(numIn, numHidden), W2(numHidden, numOut) {
-        if (numIn < 1 || numHidden < 1 || numOut < 1 || learnRate <= 0)
+    NeuralNetwork(int in, int hidden, int out, double rate) :
+    num_in(in), num_hidden(hidden), num_out(out), learn_rate(rate), W1(in, hidden), W2(hidden, out) {
+        if (num_in < 1 || num_hidden < 1 || num_out < 1 || learn_rate <= 0)
             throw std::invalid_argument("NeuralNetwork::Constructor() - Invalid argument(s)");
-
         reset();
     }
 
     /** Evaluates the data using forward propagation through the network. */
-    Matrix evaluate(const Matrix &data) const {
-        if (data.cols != num_in)
+    Matrix<double> evaluate(const Matrix<double> &data) const {
+        if (data.cols() != num_in)
             throw std::invalid_argument("NeuralNetwork::evaluate() - Input does not match neural network");
 
-        Matrix OUT = activation(activation(data * W1) * W2);
-        return num_out == 1 ? OUT : normalizeRows(OUT);
+        Matrix<double> res = activation(activation(data * W1) * W2);
+        return num_out == 1 ? res : normalizeRows(res);
     }
 
     /**
@@ -118,15 +111,14 @@ class NeuralNetwork {
      * @param threshold If evaluation is above the threshold it's labeled correct
      * @return percentage of data correctly classified
      */
-    double percentCorrect(const Matrix &data, const Matrix &labels, double threshold) const {
-        if (data.rows != labels.rows)
+    double percentCorrect(const Matrix<double> &data, const Matrix<double> &labels, double threshold) const {
+        if (data.rows() != labels.rows())
             throw std::invalid_argument("NeuralNetwork::numCorrect() - Input-data and label-data need to be of same size");
 
-        Matrix result = evaluate(data);
-
+        Matrix<double> result = evaluate(data);
         double num_correct = 0;
-        for (int i = 0; i < result.rows; ++i) {
-            for (int j = 0; j < labels.cols; ++j) {
+        for (int i = 0; i < result.rows(); ++i) {
+            for (int j = 0; j < labels.cols(); ++j) {
                 if (labels(i,j) == 1) {
                     if (result(i, j) >= threshold)
                         ++num_correct;
@@ -134,7 +126,7 @@ class NeuralNetwork {
                 }
             }
         }
-        return num_correct * 100 / data.rows;
+        return 100 * num_correct / data.rows();
     }
 
     /**
@@ -143,8 +135,8 @@ class NeuralNetwork {
      * @param data Matrix containing the data
      * @param labels Matrix containing the labels
      */
-    void train(const Matrix &data, const Matrix &labels) {
-        if (data.rows != labels.rows)
+    void train(const Matrix<double> &data, const Matrix<double> &labels) {
+        if (data.rows() != labels.rows())
             throw std::invalid_argument("NeuralNetwork::train() - Input-data and label-data need to be of same size");
 
         auto dW = costPrime(data, labels);
@@ -177,16 +169,13 @@ class NeuralNetwork {
     void saveState(const std::string &file_path) const {
         std::remove(file_path.c_str());
         std::ofstream file_out(file_path);
+        file_out.precision(15);
         file_out << num_in << " " << num_hidden << " " << num_out << "\n";
-        for (int i = 0; i < W1.rows; ++i) {
-            for (int j = 0; j < W1.cols; ++j)
-                file_out << W1(i,j) << " ";
-        }
+        for (double d : W1)
+            file_out << d << " ";
         file_out << "\n";
-        for (int i = 0; i < W2.rows; ++i) {
-            for (int j = 0; j < W2.cols; ++j)
-                file_out << W2(i,j) << " ";
-        }
+        for (double d : W2)
+            file_out << d << " ";
         file_out << std::endl;
     }
 
@@ -207,20 +196,8 @@ class NeuralNetwork {
         if (in != num_in || hidden != num_hidden || out != num_out)
             throw std::runtime_error("NeuralNetwork::readState() - File does not match network");
 
-        double d;
-        for (int i = 0; i < W1.rows; ++i) {
-            for (int j = 0; j < W1.cols; ++j) {
-                file_in >> d;
-                W1(i,j, d);
-            }
-        }
-        for (int i = 0; i < W2.rows; ++i) {
-            for (int j = 0; j < W2.cols; ++j) {
-                file_in >> d;
-                W2(i,j, d);
-            }
-        }
+        file_in >> W1 >> W2;
     }
 };
 
-#endif //NUMBER_RECOGNITION_NEURALNETWORK_H
+#endif /* NEURALNETWORK_H */

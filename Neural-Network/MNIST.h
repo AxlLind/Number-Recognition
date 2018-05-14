@@ -3,6 +3,7 @@
 #define NUMBER_RECOGNITION_MNISTREADER_H
 
 #include <fstream>
+#include <vector>
 #include "Matrix.h"
 
 /**
@@ -39,40 +40,40 @@ class MNIST {
         return std::vector<unsigned char>(data.begin(), data.end());
     }
 
-    static std::vector<Matrix> parseLabels(int batch_size, bool test = false, int num_batches = 1) {
+    static std::vector<Matrix<double>> parseLabels(int batch_size, bool test = false, int num_batches = 1) {
         auto data = read(test ? test_label_path : training_label_path);
         int items = byteToInt(data, 4);
         if (batch_size * num_batches > items)
             throw std::invalid_argument("MNIST::Parse() - number of items requested larger than data set");
 
-        std::vector<Matrix> OUT(num_batches, Matrix(batch_size,10));
+        std::vector<Matrix<double>> OUT(num_batches, Matrix<double>(batch_size,10));
         int index = 8;
         for (int i = 0; i < num_batches; ++i) {
-            for (int j = 0; j < OUT[i].rows; ++j) {
-                OUT[i](j, data[index++], 1);
+            for (int j = 0; j < OUT[i].rows(); ++j) {
+                OUT[i](j, data[index++]) =  1;
             }
         }
         return OUT;
     }
 
-    static std::vector<Matrix> parseData(int batch_size, bool test = false, int num_batches = 1) {
+    static std::vector<Matrix<double>> parseData(int batch_size, bool test = false, int num_batches = 1) {
         auto data = read(test ? test_data_path : training_data_path);
         int items = byteToInt(data, 4);
 
         if (batch_size * num_batches > items)
             throw std::invalid_argument("MNIST::Parse() - number of items requested larger than data set");
 
-        int rows  = byteToInt(data, 8);
-        int cols  = byteToInt(data, 12);
+        int rows = byteToInt(data, 8);
+        int cols = byteToInt(data, 12);
         int pixels = rows * cols;
 
-        std::vector<Matrix> OUT(num_batches, Matrix(batch_size, pixels));
+        std::vector<Matrix<double>> OUT(num_batches, Matrix<double>(batch_size, pixels));
         int index = 16;
         for (int i = 0; i < num_batches; ++i) {
             for (int j = 0; j < batch_size; ++j) {
                 for (int k = 0; k < pixels; ++k) {
                     double val = static_cast<double>(data[index++]) / 255;
-                    OUT[i](j, k, val);
+                    OUT[i](j, k) = val;
                 }
             }
         }
@@ -88,7 +89,7 @@ class MNIST {
      * Parses the whole subset of the data set, as specified by the DataType.
      * Returns the parsed data as a Matrix.
      */
-    static Matrix ParseAll(DataType type) {
+    static Matrix<double> ParseAll(DataType type) {
         switch (type) {
             case TrainingData:   return   parseData(60000)[0];
             case TrainingLabels: return parseLabels(60000)[0];
@@ -107,7 +108,7 @@ class MNIST {
      * @param batch_size How many datapoints each batch contains
      * @param num_batches How many batches to return
      */
-    static std::vector<Matrix> Parse(DataType type, int batch_size, int num_batches) {
+    static std::vector<Matrix<double>> Parse(DataType type, int batch_size, int num_batches) {
         if (batch_size < 1 || num_batches < 1)
             throw std::invalid_argument("MNIST::Parse() - Batch size and/or number of batches need to be at least one");
 

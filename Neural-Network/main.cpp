@@ -9,19 +9,19 @@ double learn_rate = 0.2, correct_threshold = 0.5;
 std::string file_path = "../Data/network.state";
 /* Program Parameters */
 
-void example(const NeuralNetwork &NN, const Matrix &data, const Matrix &labels) {
-    Matrix example(1, data.cols);
-    int index = rand() % data.rows;
-    for (int i = 0; i < example.cols; ++i) {
-        example(0, i, data(index, i));
+void example(const NeuralNetwork &NN, const Matrix<double> &data, const Matrix<double> &labels) {
+    Matrix<double> example(1, data.cols());
+    int index = rand() % data.rows();
+    for (int i = 0; i < example.cols(); ++i) {
+        example(0, i) = data(index, i);
         std::cout << (example(0, i) == 0 ? "--" : "##");
         if ((i + 1) % 28 == 0) std::cout << "\n";
     }
 
-    Matrix result = NN.evaluate(example);
+    Matrix<double> result = NN.evaluate(example);
     double max = result(0,0);
     int maxI = 0;
-    for (int i = 1; i < result.cols; ++i) {
+    for (int i = 1; i < result.cols(); ++i) {
         double tmp = result(0,i);
         if (max < tmp) {
             max = tmp;
@@ -32,12 +32,12 @@ void example(const NeuralNetwork &NN, const Matrix &data, const Matrix &labels) 
     std::cout << (labels(index, maxI) == 1 ? ", Correct! " : ", Incorrect! ") << "\n";
 }
 
-void test(const NeuralNetwork &NN, const Matrix &data, const Matrix &labels) {
+void test(const NeuralNetwork &NN, const Matrix<double> &data, const Matrix<double> &labels) {
     std::cout << "> Percent of test set correctly identified: ";
     std::cout << NN.percentCorrect(data, labels, correct_threshold) << "%\n";
 }
 
-void train(NeuralNetwork &NN, const std::vector<Matrix> &data, const std::vector<Matrix> &labels) {
+void train(NeuralNetwork &NN, const std::vector<Matrix<double>> &data, const std::vector<Matrix<double>> &labels) {
     std::vector<int> indexes(num_batches);
     for (int i = 0; i < indexes.size(); ++i) indexes[i] = i;
     std::random_shuffle(indexes.begin(), indexes.end());
@@ -85,7 +85,7 @@ int main() {
     auto test_data       = MNIST::ParseAll(MNIST::TestData);
     std::cout << "> Time: " << double(clock() - before) / CLOCKS_PER_SEC << "s\n";
 
-    NeuralNetwork NN(test_data.cols, hidden_neurons, test_labels.cols, learn_rate);
+    NeuralNetwork NN(test_data.cols(), hidden_neurons, test_labels.cols(), learn_rate);
     while(1) {
         std::cout << "1: Example | 2: Test | 3: Train | 4: Read | 5: Reset | 6: Save | 7: Exit\n";
         std::cout << "Enter a number to choose an action: ";
