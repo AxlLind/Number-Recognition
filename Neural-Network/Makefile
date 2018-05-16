@@ -1,11 +1,14 @@
 .SILENT:
 
-
-CC= clang++
-FLAGS= -std=c++1z -O3 -Wall
+CC=clang++
+FLAGS=-std=c++1z -O3 -Wall -g
+OUT=a.out
 
 compile:
-	$(CC) $(FLAGS) main.cpp
+	$(CC) $(FLAGS) -o $(OUT) main.cpp
 
 r:
-	./a.out
+	./$(OUT)
+
+valgrind:
+	valgrind --tool=memcheck --leak-check=yes ./$(OUT)

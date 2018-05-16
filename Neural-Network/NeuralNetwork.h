@@ -50,11 +50,9 @@ class NeuralNetwork {
     Matrix<double> normalizeRows(const Matrix<double> &a) const {
         Matrix<double> m(a.rows(), a.cols());
         for (int i = 0; i < m.rows(); ++i) {
-            double sum = 0;
-            for (int j = 0; j < m.cols(); ++j)
-                sum += a(i, j);
-            for (int j = 0; sum != 0 && j < m.cols(); ++j)
-                m(i, j) = a(i, j) / sum;
+            double sum = std::accumulate(a.begin(i), a.end(i), 0.0);
+            if (sum != 0)
+                std::transform(a.begin(i), a.end(i), m.begin(i), [sum](double d){ return d/sum; });
         }
         return m;
     }
@@ -170,11 +168,9 @@ public:
         std::ofstream file_out(file_path);
         file_out.precision(15);
         file_out << num_in << " " << num_hidden << " " << num_out << "\n";
-        for (double d : W1)
-            file_out << d << " ";
+        std::for_each(W1.begin(), W1.end(), [&file_out](double d){ file_out << d << ' '; })
         file_out << "\n";
-        for (double d : W2)
-            file_out << d << " ";
+        std::for_each(W2.begin(), W2.end(), [&file_out](double d){ file_out << d << ' '; })
         file_out << std::endl;
     }
 
@@ -189,12 +185,10 @@ public:
         std::ifstream file_in(file_path);
         if (!file_in.is_open())
             throw std::invalid_argument("NeuralNetwork::readState() - Error reading file");
-
         int in, hidden, out;
         file_in >> in >> hidden >> out;
         if (in != num_in || hidden != num_hidden || out != num_out)
             throw std::runtime_error("NeuralNetwork::readState() - File does not match network");
-
         file_in >> W1 >> W2;
     }
 };

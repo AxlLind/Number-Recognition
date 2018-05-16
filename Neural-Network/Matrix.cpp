@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 #include <type_traits>
 #include <functional>
 #include <cmath>
@@ -131,8 +132,7 @@ Matrix<T> Matrix<T>::scalar_multi(const Matrix<T> &a) const {
 template<typename T>
 std::ostream& operator<<(std::ostream &os, const Matrix<T> &a) {
     for (int i = 0; i < a.rows(); ++i) {
-        for (int j = 0; j < a.cols(); ++j)
-            os << a(i,j) << ' ';
+        std::for_each(a.begin(i), a.end(i), [&os](const T &t){ os << t << ' '; });
         os << '\n';
     }
     return os;

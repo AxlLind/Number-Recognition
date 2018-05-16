@@ -62,10 +62,8 @@ class MNIST {
         if (batch_size * num_batches > items)
             throw std::invalid_argument("MNIST::Parse() - number of items requested larger than data set");
 
-        int rows = byteToInt(data, 8), cols = byteToInt(data, 12);
-
+        int rows = byteToInt(data, 8), cols = byteToInt(data, 12), index = 16;
         std::vector<Matrix<double>> res(num_batches, Matrix<double>(batch_size, rows * cols));
-        int index = 16;
         std::for_each(res.begin(), res.end(), [&data, &index](Matrix<double> &m){
             std::for_each(m.begin(), m.end(), [&data, &index](double &d){ d = double(data[index++]) / 255; });
         });

@@ -54,7 +54,8 @@ public:
 
     using iterator = T*;
     constexpr iterator begin(int row = 0) const { return m_vec + m_cols * row; }
-    constexpr iterator end()   const { return m_vec + m_rows * m_cols; }
+    constexpr iterator end(int row) const { return begin(row+1); }
+    constexpr iterator end() const { return begin(m_rows); }
 private:
     size_t m_rows, m_cols;
     T *m_vec;
