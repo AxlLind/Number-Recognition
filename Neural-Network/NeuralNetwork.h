@@ -168,9 +168,9 @@ public:
         std::ofstream file_out(file_path);
         file_out.precision(15);
         file_out << num_in << " " << num_hidden << " " << num_out << "\n";
-        std::for_each(W1.begin(), W1.end(), [&file_out](double d){ file_out << d << ' '; })
+        std::for_each(W1.begin(), W1.end(), [&file_out](double d){ file_out << d << ' '; });
         file_out << "\n";
-        std::for_each(W2.begin(), W2.end(), [&file_out](double d){ file_out << d << ' '; })
+        std::for_each(W2.begin(), W2.end(), [&file_out](double d){ file_out << d << ' '; });
         file_out << std::endl;
     }
 
