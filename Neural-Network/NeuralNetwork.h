@@ -108,20 +108,25 @@ public:
      * @param threshold If evaluation is above the threshold it's labeled correct
      * @return percentage of data correctly classified
      */
-    double percentCorrect(const Matrix<double> &data, const Matrix<double> &labels, double threshold) const {
+    double percentCorrect(const Matrix<double> &data, const Matrix<double> &labels) const {
         if (data.rows() != labels.rows())
             throw std::invalid_argument("NeuralNetwork::numCorrect() - Input-data and label-data need to be of same size");
 
         Matrix<double> result = evaluate(data);
         double num_correct = 0;
         for (int i = 0; i < result.rows(); ++i) {
+            double max = -1;
+            int max_i = -1;
+            int correct = -1;
             for (int j = 0; j < labels.cols(); ++j) {
-                if (labels(i,j) == 1) {
-                    if (result(i, j) >= threshold)
-                        ++num_correct;
-                    break;
+                if (labels(i,j) == 1)
+                  correct = j;
+                if (result(i,j) > max) {
+                  max = result(i,j);
+                  max_i = j;
                 }
             }
+            if (correct == max_i) ++num_correct;
         }
         return 100 * num_correct / data.rows();
     }
